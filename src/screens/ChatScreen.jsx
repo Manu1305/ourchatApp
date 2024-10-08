@@ -23,7 +23,7 @@ const ChatScreen = ({route, navigation}) => {
   const fetchMessages = async (skip = 0, limit = 20) => {
     try {
       const response = await fetch(
-        `http://192.168.0.11:7000/api/v1/app/chat/${chatId}/${skip}/${limit}`,
+        `http://192.168.0.9:7000/api/v1/app/chat/${chatId}/${skip}/${limit}`,
         {
           method: 'GET',
           headers: {
@@ -67,7 +67,7 @@ const ChatScreen = ({route, navigation}) => {
       setUserId(storedUserId);
       fetchMessages();
 
-      socket.current = io('http://192.168.0.11:7000', {
+      socket.current = io('http://192.168.0.9:7000', {
         query: {userId: storedUserId},
       });
 

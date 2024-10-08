@@ -7,6 +7,7 @@ import SplashScreen from './src/screens/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import ProfilePage from './src/screens/Profile';
 const Tab = createBottomTabNavigator();
 
 const App = () => {
@@ -20,8 +21,8 @@ const App = () => {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="ChatList" component={ChatList} />
         <Stack.Screen name="ChatScreen" component={ChatPage} />
+        <Stack.Screen name="Profile" component={ProfilePage} />
       </Stack.Navigator>
-      
     </NavigationContainer>
   );
 };

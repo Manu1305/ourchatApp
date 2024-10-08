@@ -1,9 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, FlatList, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {io} from 'socket.io-client';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // Import icons
 
 const ChatList = () => {
   const [chatData, setChatData] = useState([]);
@@ -37,7 +43,7 @@ const ChatList = () => {
       const userId = await AsyncStorage.getItem('_id');
       console.log('Retrieved userId:', userId);
       if (userId) {
-        socket = io('http://192.168.0.11:7000', {
+        socket = io('http://192.168.0.9:7000', {
           query: {userId: userId},
         });
         const onConnect = () => {
@@ -121,25 +127,25 @@ const ChatList = () => {
       <View style={styles.bottomNav}>
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate('ChatList')}>
-          <MaterialCommunityIcons
-            name="cards-playing-heart-outline"
-            size={30}
-            color="#d5006d"
+          onPress={() => navigation.navigate('Profile')}>
+          <Image
+            source={require('../assets/love-letter.png')}
+            style={styles.icon}
           />
-          <Text style={styles.navText}>images</Text>
+          <Text style={styles.navText}>memories</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('ChatList')}>
+          <Image source={require('../assets/chat.png')} style={styles.icon} />
+          <Text style={styles.navText}>Chat</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.navButton}
           onPress={() => navigation.navigate('Profile')}>
-          <MaterialCommunityIcons name="profile" size={30} color="#d5006d" />
-          <Text style={styles.navText}>Profile</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => navigation.navigate('Photos')}>
-          <MaterialCommunityIcons name="image" size={30} color="#d5006d" />
-          <Text style={styles.navText}>Photos</Text>
+          <Image source={require('../assets/user.png')} style={styles.icon} />
+          <Text style={styles.navText}>profile</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -190,16 +196,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     backgroundColor: '#fff',
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderTopWidth: 1,
     borderTopColor: '#d5006d',
   },
   navButton: {
     alignItems: 'center',
   },
+  icon: {
+    width: 28,
+    height: 28,
+  },
   navText: {
-    fontSize: 14,
-    color: '#d5006d',
+    fontSize: 12,
+    color: '#ff69b4',
+    marginTop: 4,
   },
 });
 

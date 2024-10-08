@@ -25,7 +25,7 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        'http://192.168.0.11:7000/api/v1/app/auth/login',
+        'http://192.168.0.9:7000/api/v1/app/auth/login',
         {
           method: 'POST',
           headers: {

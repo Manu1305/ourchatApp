@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "891734948282",
+    "project_id": "chat-92668",
+    "storage_bucket": "chat-92668.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:891734948282:android:23c58969d4c3ff13198583",
+        "android_client_info": {
+          "package_name": "com.homeChat.name"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK7ntr_a33aV2ePhr5F2Zxia94Y_cYh4Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

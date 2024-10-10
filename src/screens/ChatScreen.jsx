@@ -6,10 +6,10 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
 } from 'react-native';
 import {io} from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LinearGradient from 'react-native-linear-gradient';
 
 const ChatScreen = ({route, navigation}) => {
   const {chatId, token} = route.params;
@@ -17,7 +17,7 @@ const ChatScreen = ({route, navigation}) => {
   const [receiverInfo, setReceiverInfo] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [userId, setUserId] = useState(null);
-  const flatListRef = useRef(null); // FlatList reference
+  const flatListRef = useRef(null);
   const socket = useRef(null);
 
   const fetchMessages = async (skip = 0, limit = 20) => {
@@ -54,7 +54,6 @@ const ChatScreen = ({route, navigation}) => {
     }
   };
 
-  // Scroll to the bottom after messages update
   useEffect(() => {
     if (flatListRef.current) {
       flatListRef.current.scrollToEnd({animated: true});
@@ -95,6 +94,7 @@ const ChatScreen = ({route, navigation}) => {
         message: newMessage,
         isMedia: false,
         file: [],
+        chatId:chatId
       };
 
       socket.current.emit('sendMessage', message);
@@ -111,8 +111,8 @@ const ChatScreen = ({route, navigation}) => {
     const hours = date.getHours();
     const minutes = date.getMinutes();
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12; // Convert to 12-hour format
-    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes; // Add leading zero if needed
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
     return `${formattedHours}:${formattedMinutes} ${ampm}`;
   };
 
@@ -126,15 +126,13 @@ const ChatScreen = ({route, navigation}) => {
       ]}>
       <View style={styles.messageContent}>
         <Text style={styles.messageText}>{item.message}</Text>
-        <Text style={styles.timestamp}>
-          {formatDate(item.createdAt)} {/* Format and display time */}
-        </Text>
+        <Text style={styles.timestamp}>{formatDate(item.createdAt)}</Text>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#f8f8f8', '#e0e0e0']} style={styles.container}>
       <View style={styles.header}>
         {receiverInfo && (
           <>
@@ -153,8 +151,8 @@ const ChatScreen = ({route, navigation}) => {
         contentContainerStyle={styles.messageList}
         onContentSizeChange={() =>
           flatListRef.current.scrollToEnd({animated: true})
-        } // Scroll to the bottom when the content size changes
-        onLayout={() => flatListRef.current.scrollToEnd({animated: true})} // Scroll to the bottom when the layout is set
+        }
+        onLayout={() => flatListRef.current.scrollToEnd({animated: true})}
       />
 
       <View style={styles.inputContainer}>
@@ -168,7 +166,7 @@ const ChatScreen = ({route, navigation}) => {
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -176,7 +174,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f8f8f8',
   },
   header: {
     flexDirection: 'row',

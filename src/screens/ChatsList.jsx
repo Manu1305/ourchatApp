@@ -10,6 +10,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {io} from 'socket.io-client';
+import placeholderImage from '../assets/love-letter.png';
 
 const ChatList = () => {
   const [chatData, setChatData] = useState([]);
@@ -41,32 +42,28 @@ const ChatList = () => {
       navigation.navigate('Login');
     } else {
       const userId = await AsyncStorage.getItem('_id');
-      console.log('Retrieved userId:', userId);
       if (userId) {
         socket = io('http://192.168.0.9:7000', {
           query: {userId: userId},
         });
-        const onConnect = () => {
-          console.log('Socket connected:', socket.id);
+        socket.on('connect', () => {
           socket.emit('requestChatList', {userId});
-        };
-        socket.on('connect', onConnect);
-        socket.on('connect_error', error => {
-          console.error('Socket connection error:', error);
         });
         socket.on('chatList', async response => {
-          console.log('Chat List Response:', response);
           if (response.status) {
-            if (JSON.stringify(response.data) !== JSON.stringify(chatData)) {
-              setChatData(response.data);
-              await saveChatListToLocalStorage(response.data);
+            const uniqueChatData = response.data.reduce((acc, current) => {
+              const x = acc.find(item => item.chatId === current.chatId);
+              if (!x) {
+                return acc.concat([current]);
+              } else {
+                return acc;
+              }
+            }, []);
+            if (JSON.stringify(uniqueChatData) !== JSON.stringify(chatData)) {
+              setChatData(uniqueChatData);
+              await saveChatListToLocalStorage(uniqueChatData);
             }
-          } else {
-            console.error('No chat data available or status is false.');
           }
-        });
-        socket.on('error', error => {
-          console.error('Error from server:', error);
         });
       } else {
         console.error('User ID is null');
@@ -78,14 +75,9 @@ const ChatList = () => {
     React.useCallback(() => {
       fetchChatListFromLocalStorage();
       fetchChatList();
-
       return () => {
         if (socket) {
-          socket.off('connect');
-          socket.off('chatList');
-          socket.off('error');
           socket.disconnect();
-          console.log('Socket disconnected');
         }
       };
     }, [navigation]),
@@ -96,12 +88,18 @@ const ChatList = () => {
       style={styles.chatItem}
       onPress={async () => {
         const token = await AsyncStorage.getItem('accessToken');
-        console.log(token, 'tokennn');
-        console.log(item.chatId, 'chatid in chatlist');
         navigation.navigate('ChatScreen', {chatId: item.chatId, token});
       }}>
+      <Image
+        source={{
+          uri:
+            `https://chatapp1305.s3.eu-north-1.amazonaws.com/${item.groupProfilePicture}` ||
+            placeholderImage, // Placeholder image
+        }}
+        style={styles.profilePicture}
+      />
       <View style={styles.chatDetails}>
-        <Text style={styles.name}>{item.fullName}</Text>
+        <Text style={styles.name}>{item.chatName}</Text>
         <Text style={styles.lastMessage}>{item.latestMessage}</Text>
       </View>
       <Text style={styles.timestamp}>
@@ -112,27 +110,37 @@ const ChatList = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Chat List</Text>
+      <Text style={styles.title}>Our Rooms</Text>
       {chatData.length === 0 ? (
         <Text style={styles.emptyMessage}>No chats available.</Text>
       ) : (
         <FlatList
           data={chatData}
           renderItem={renderItem}
-          keyExtractor={item => item._id}
+          keyExtractor={item => item.chatId}
         />
       )}
+
+      {/* Static Plus Button */}
+      <TouchableOpacity
+        style={styles.plusButton}
+        onPress={() => navigation.navigate('Newgroup')}>
+        <Image
+          source={require('../assets/interior-design.png')}
+          style={styles.plusIcon}
+        />
+      </TouchableOpacity>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate('Profile')}>
+          onPress={() => navigation.navigate('PostScreen')}>
           <Image
             source={require('../assets/love-letter.png')}
             style={styles.icon}
           />
-          <Text style={styles.navText}>memories</Text>
+          <Text style={styles.navText}>Memories</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}
@@ -145,7 +153,7 @@ const ChatList = () => {
           style={styles.navButton}
           onPress={() => navigation.navigate('Profile')}>
           <Image source={require('../assets/user.png')} style={styles.icon} />
-          <Text style={styles.navText}>profile</Text>
+          <Text style={styles.navText}>Profile</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -166,10 +174,24 @@ const styles = StyleSheet.create({
   },
   chatItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#d5006d',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    marginVertical: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  profilePicture: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
   },
   chatDetails: {
     flex: 1,
@@ -177,6 +199,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#d5006d',
   },
   lastMessage: {
     fontSize: 16,
@@ -211,6 +234,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#ff69b4',
     marginTop: 4,
+  },
+  plusButton: {
+    position: 'absolute',
+    bottom: 95,
+    right: 20,
+    backgroundColor: '#ff69b4',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  plusIcon: {
+    width: 28,
+    height: 28,
+    tintColor: '#fff',
   },
 });
 

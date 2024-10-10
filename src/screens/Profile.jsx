@@ -67,7 +67,7 @@ const ProfilePage = () => {
     'https://i.pinimg.com/236x/db/1f/9a/db1f9a3eaca4758faae5f83947fa807c.jpg';
 
   return (
-    <LinearGradient colors={['#ffefba', '#ffffff']} style={styles.container}>
+    <LinearGradient colors={['#ffe4e1', '#ffffff']} style={styles.container}>
       <View style={styles.card}>
         <Image
           source={{uri: profile?.profilePic || defaultImageUri}}
@@ -79,6 +79,11 @@ const ProfilePage = () => {
         </Text>
         <TouchableOpacity style={styles.editButton}>
           <Text style={styles.buttonText}>Edit Profile</Text>
+          {/* Replace this PNG image source with your own */}
+          <Image
+            source={require('../assets/edit.png')} // Adjust the path accordingly
+            style={styles.icon}
+          />
         </TouchableOpacity>
       </View>
     </LinearGradient>
@@ -88,8 +93,9 @@ const ProfilePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // Center vertically
+    justifyContent: 'flex-start', // Center vertically
     alignItems: 'center', // Center horizontally
+    padding: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -100,25 +106,27 @@ const styles = StyleSheet.create({
   card: {
     width: '90%',
     padding: 20,
-    borderRadius: 10,
-    backgroundColor: 'white',
-    shadowColor: '#000',
+    borderRadius: 15,
+    backgroundColor: '#fff',
+    shadowColor: '#f00',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
     elevation: 5, // for Android
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ff69b4', // Cute pink border
   },
   profilePicture: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 20,
-    borderWidth: 2,
-    borderColor: 'pink',
+    width: 120,
+    height: 120,
+    borderRadius: 10, // Reduced roundness
+    marginBottom: 15,
+    borderWidth: 3,
+    borderColor: '#ff69b4',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -129,27 +137,35 @@ const styles = StyleSheet.create({
     elevation: 5, // for Android
   },
   name: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: 'pink',
-    marginBottom: 10,
+    color: '#ff69b4',
+    marginBottom: 5,
   },
   about: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
     paddingHorizontal: 20,
-    color: '#333',
-    marginBottom: 20,
+    color: '#555',
+    marginBottom: 15,
   },
   editButton: {
-    backgroundColor: 'pink',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ff69b4',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 10,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    marginRight: 10,
+  },
+  icon: {
+    width: 20, // Adjust width and height as per your icon size
+    height: 20,
+    marginLeft: 5,
   },
 });
 

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  AppState,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
@@ -15,7 +16,8 @@ import placeholderImage from '../assets/love-letter.png';
 const ChatList = () => {
   const [chatData, setChatData] = useState([]);
   const navigation = useNavigation();
-  let socket;
+  const [socket, setSocket] = useState(null);
+  const [appState, setAppState] = useState(AppState.currentState);
 
   const fetchChatListFromLocalStorage = async () => {
     try {
@@ -43,13 +45,16 @@ const ChatList = () => {
     } else {
       const userId = await AsyncStorage.getItem('_id');
       if (userId) {
-        socket = io('http://192.168.0.9:7000', {
+        const newSocket = io('http://192.168.0.9:7000', {
           query: {userId: userId},
         });
-        socket.on('connect', () => {
-          socket.emit('requestChatList', {userId});
+        setSocket(newSocket);
+
+        newSocket.on('connect', () => {
+          newSocket.emit('requestChatList', {userId});
         });
-        socket.on('chatList', async response => {
+
+        newSocket.on('chatList', async response => {
           if (response.status) {
             const uniqueChatData = response.data.reduce((acc, current) => {
               const x = acc.find(item => item.chatId === current.chatId);
@@ -78,35 +83,70 @@ const ChatList = () => {
       return () => {
         if (socket) {
           socket.disconnect();
+          console.log('Socket disconnected');
         }
       };
     }, [navigation]),
   );
 
-  const renderItem = ({item}) => (
-    <TouchableOpacity
-      style={styles.chatItem}
-      onPress={async () => {
-        const token = await AsyncStorage.getItem('accessToken');
-        navigation.navigate('ChatScreen', {chatId: item.chatId, token});
-      }}>
-      <Image
-        source={{
-          uri:
-            `https://chatapp1305.s3.eu-north-1.amazonaws.com/${item.groupProfilePicture}` ||
-            placeholderImage, // Placeholder image
-        }}
-        style={styles.profilePicture}
-      />
-      <View style={styles.chatDetails}>
-        <Text style={styles.name}>{item.chatName}</Text>
-        <Text style={styles.lastMessage}>{item.latestMessage}</Text>
-      </View>
-      <Text style={styles.timestamp}>
-        {new Date(item.lastChatOn).toLocaleString()}
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      setAppState(nextAppState);
+      if (nextAppState === 'background') {
+        if (socket) {
+          socket.disconnect();
+          console.log('Socket disconnected on app background');
+        }
+      } else if (nextAppState === 'active') {
+        fetchChatList(); // Reconnect or fetch chat list when app is active again
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [socket]);
+
+const renderItem = ({item}) => (
+  <TouchableOpacity
+    style={styles.chatItem}
+    onPress={async () => {
+      const token = await AsyncStorage.getItem('accessToken');
+      navigation.navigate('ChatScreen', {
+        chatId: item.chatId,
+        token,
+        recciverId: item._id,
+      });
+    }}>
+    <Image
+      source={{
+        uri:
+          `https://chatapp1305.s3.eu-north-1.amazonaws.com/${item.groupProfilePicture}` ||
+          placeholderImage, // Placeholder image
+      }}
+      style={styles.profilePicture}
+    />
+    <View style={styles.chatDetails}>
+      <Text style={styles.name}>{item.chatName}</Text>
+      <Text
+        style={[
+          styles.lastMessage,
+          item.unReadCount > 0 && styles.boldMessage, // Apply bold style if there are unread messages
+        ]}>
+        {item.latestMessage}
       </Text>
-    </TouchableOpacity>
-  );
+      {item.unReadCount > 0 && (
+        <Text style={styles.unreadCount}>
+          {item.unReadCount} unread message{item.unReadCount > 1 ? 's' : ''}
+        </Text>
+      )}
+    </View>
+    <Text style={styles.timestamp}>
+      {new Date(item.lastChatOn).toLocaleString()}
+    </Text>
+  </TouchableOpacity>
+);
+
 
   return (
     <View style={styles.container}>
@@ -255,6 +295,13 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     tintColor: '#fff',
+  },
+  boldMessage: {
+    fontWeight: 'bold',
+  },
+  unreadCount: {
+    fontSize: 12,
+    color: '#d5006d',
   },
 });
 

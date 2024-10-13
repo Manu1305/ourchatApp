@@ -8,16 +8,17 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import LinearGradient from 'react-native-linear-gradient'; // You need to install this package
+import LinearGradient from 'react-native-linear-gradient';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   const fetchProfileData = async () => {
     try {
       const token = await AsyncStorage.getItem('accessToken');
-
       const response = await fetch(
         'http://192.168.0.9:7000/api/v1/app/settings/profile',
         {
@@ -51,14 +52,16 @@ const ProfilePage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProfileData();
+    }, []),
+  );
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="pink" />
+        <ActivityIndicator size="large" color="#ff69b4" />
       </View>
     );
   }
@@ -67,23 +70,33 @@ const ProfilePage = () => {
     'https://i.pinimg.com/236x/db/1f/9a/db1f9a3eaca4758faae5f83947fa807c.jpg';
 
   return (
-    <LinearGradient colors={['#ffe4e1', '#ffffff']} style={styles.container}>
+    <LinearGradient colors={['#ffe4e1', '#ffb6c1']} style={styles.container}>
       <View style={styles.card}>
         <Image
-          source={{uri: profile?.profilePic || defaultImageUri}}
+          source={{
+            uri: profile?.profilePicture
+              ? `https://chatapp1305.s3.eu-north-1.amazonaws.com/${profile.profilePicture}`
+              : defaultImageUri,
+          }}
           style={styles.profilePicture}
         />
+
         <Text style={styles.name}>{profile?.fullName || 'Your Name'}</Text>
-        <Text style={styles.about}>
-          {profile?.about || 'This is a short description about yourself.'}
+        <Text style={styles.feeling}>
+          ❤️{' '}
+          {profile?.currentFeelingAboutPartner
+            ? `Feeling 💕 ${profile.currentFeelingAboutPartner}`
+            : 'Feeling Unknown 💕'}{' '}
+          ❤️
         </Text>
-        <TouchableOpacity style={styles.editButton}>
+        <Text style={styles.mood}>Mood: {profile?.myMood || 'Normal'}</Text>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => {
+            navigation.navigate('editPage', {profile});
+          }}>
           <Text style={styles.buttonText}>Edit Profile</Text>
-          {/* Replace this PNG image source with your own */}
-          <Image
-            source={require('../assets/edit.png')} // Adjust the path accordingly
-            style={styles.icon}
-          />
+          <Image source={require('../assets/edit.png')} style={styles.icon} />
         </TouchableOpacity>
       </View>
     </LinearGradient>
@@ -93,8 +106,8 @@ const ProfilePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start', // Center vertically
-    alignItems: 'center', // Center horizontally
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   loadingContainer: {
@@ -105,65 +118,65 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '90%',
-    padding: 20,
-    borderRadius: 15,
+    padding: 25,
+    borderRadius: 20,
     backgroundColor: '#fff',
-    shadowColor: '#f00',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
+    shadowColor: '#ff69b4',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 5, // for Android
+    elevation: 6,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ff69b4', // Cute pink border
+    borderColor: '#ff69b4',
   },
   profilePicture: {
     width: 120,
     height: 120,
-    borderRadius: 10, // Reduced roundness
+    borderRadius: 60,
     marginBottom: 15,
     borderWidth: 3,
     borderColor: '#ff69b4',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5, // for Android
+    shadowColor: '#ffb6c1',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 5,
   },
   name: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#ff69b4',
     marginBottom: 5,
+    fontFamily: 'Cursive',
   },
-  about: {
+  feeling: {
+    fontSize: 22,
+    color: '#ff1493',
+    fontWeight: '600',
+    marginBottom: 10,
+    textAlign: 'center', // Center the text
+  },
+  mood: {
     fontSize: 18,
-    textAlign: 'center',
-    paddingHorizontal: 20,
     color: '#555',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ff69b4',
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    paddingHorizontal: 25,
+    borderRadius: 20,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    marginRight: 10,
+    fontSize: 16,
   },
   icon: {
-    width: 20, // Adjust width and height as per your icon size
+    width: 20,
     height: 20,
     marginLeft: 5,
   },

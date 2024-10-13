@@ -12,6 +12,7 @@ import ProfilePage from './src/screens/Profile';
 import PostScreen from './src/screens/postsScreen';
 import AddPostScreen from './src/screens/newPost';
 import CreateChatGroup from './src/screens/CreateGroupScreen';
+import EditProfilePage from './src/screens/editProfilePage';
 
 const Stack = createNativeStackNavigator();
 
@@ -73,6 +74,7 @@ const App = () => {
         <Stack.Screen name="PostScreen" component={PostScreen} />
         <Stack.Screen name="Newpost" component={AddPostScreen} />
         <Stack.Screen name="Newgroup" component={CreateChatGroup} />
+        <Stack.Screen name="editPage" component={EditProfilePage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
